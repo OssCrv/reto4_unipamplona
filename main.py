@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import csv
-from base_datos import productos
 
 def crear_producto(codigo, descripcion, precio, iva): #Create
     productos[codigo] = [descripcion, precio, iva]
@@ -37,6 +36,7 @@ def cargar_datos():
                 continue
             productos[row[0]] = row[1:4] #La primer columna es la llave de mi diccionario y el resto es mi lista [descripción, precio, IVA]
     return productos
+
         
 def imprimir_datos(diccionario_llave_lista): #Función para imprimir los datos bonitos
     for lista_datos in diccionario_llave_lista.items():
@@ -44,7 +44,6 @@ def imprimir_datos(diccionario_llave_lista): #Función para imprimir los datos b
 
 
 if __name__ == "__main__":
-    guardar_datos(productos)
     productos = cargar_datos()
     imprimir_datos(productos)
 
