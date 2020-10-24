@@ -1,20 +1,37 @@
 # -*- coding: utf-8 -*-
 import csv
 
+#productos = {
+#    '001': ['descripción', 'precio', 'IVA']
+#}
+
 def crear_producto(codigo, descripcion, precio, iva): #Create
-    productos[codigo] = [descripcion, precio, iva]
+    if codigo in productos:
+        print('El código {} proporcionado ya fue usado'.format(codigo))
+    else:
+        productos[codigo] = [descripcion, precio, iva]
 
 
 def consultar_producto(codigo): #Read
-    pass
+    if codigo in productos:
+        imprimir_producto(codigo)
+    else:
+        print('El producto con codigo {} no se encuentra registrado en la base de datos'.format(codigo))
 
 
-def modificar_producto(codigo): #Update
-    pass
+def modificar_producto(codigo, descripcion, precio, iva): #Update
+    if codigo in productos:
+        productos[codigo] = [descripcion, precio, iva]
+    else:
+        print('El código {} no existe en nuestra base de datos'.format(codigo))
 
 
 def borrar_producto(codigo): #Delete
-    pass
+    if codigo in productos:    
+        del productos[codigo]
+        print('El elemento con codigo {} ha sido eliminado'.format(codigo))
+    else:
+        print('Ese producto no se encuentra en la base de datos')
 
 
 def guardar_datos(productos):
@@ -37,13 +54,18 @@ def cargar_datos():
             productos[row[0]] = row[1:4] #La primer columna es la llave de mi diccionario y el resto es mi lista [descripción, precio, IVA]
     return productos
 
-        
-def imprimir_datos(diccionario_llave_lista): #Función para imprimir los datos bonitos
+
+def imprimir_todo(diccionario_llave_lista): #Función para imprimir los datos bonitos
     for lista_datos in diccionario_llave_lista.items():
         print('{:^10} {:^30} {:^10} {:^10}'.format(lista_datos[0],lista_datos[1][0],lista_datos[1][1],lista_datos[1][2]))
 
 
+def imprimir_producto(codigo):
+    print('{:^10} {:^30} {:^10} {:^10}'.format(codigo, productos[codigo][0],productos[codigo][1],productos[codigo][2]))
+
 if __name__ == "__main__":
     productos = cargar_datos()
-    imprimir_datos(productos)
+    imprimir_todo(productos)
+
+
 
