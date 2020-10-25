@@ -5,6 +5,7 @@ import csv
 #    '001': ['descripción', 'precio', 'IVA']
 #}
 
+#region CRUD functions
 def crear_producto(codigo, descripcion, precio, iva): #Create
     if codigo in productos:
         print('El código {} proporcionado ya fue usado'.format(codigo))
@@ -33,7 +34,9 @@ def borrar_producto(codigo): #Delete
     else:
         print('Ese producto no se encuentra en la base de datos')
 
+#endregion
 
+#region gestión de datos
 def guardar_datos(productos):
     with open('base_de_datos.csv', 'w', newline='', encoding='utf-8') as archivo_base_de_datos: #Abro el archivo en modalidad escritura con caracteres UNICODE
         escritor_de_datos = csv.writer(archivo_base_de_datos) #Construyo un objeto para leer datos sobre el arc
@@ -54,7 +57,9 @@ def cargar_datos():
             productos[row[0]] = row[1:4] #La primer columna es la llave de mi diccionario y el resto es mi lista [descripción, precio, IVA]
     return productos
 
+#endregion
 
+#region Impresiones de datos
 def imprimir_todo(diccionario_llave_lista): #Función para imprimir los datos bonitos
     for lista_datos in diccionario_llave_lista.items():
         print('{:^10} {:^30} {:^10} {:^10}'.format(lista_datos[0],lista_datos[1][0],lista_datos[1][1],lista_datos[1][2]))
@@ -62,6 +67,8 @@ def imprimir_todo(diccionario_llave_lista): #Función para imprimir los datos bo
 
 def imprimir_producto(codigo):
     print('{:^10} {:^30} {:^10} {:^10}'.format(codigo, productos[codigo][0],productos[codigo][1],productos[codigo][2]))
+    
+#endregion
 
 if __name__ == "__main__":
     productos = cargar_datos()
