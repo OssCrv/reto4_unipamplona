@@ -3,6 +3,24 @@ import csv
 from getpass import getpass
 
 
+def validar_ingreso(usuario, contraseña):
+    cuentas = [{
+        'usuario': 'user1',
+        'contraseña': 'password1',
+        'permiso': 'administrar'
+    }, 
+    {
+        'usuario': 'user2',
+        'contraseña': 'password2',
+        'permiso': 'facturar'
+    }]
+
+    for cuenta in cuentas:
+        if cuenta['usuario'] == usuario and cuenta['contraseña'] == contraseña:
+            return cuenta['permiso']
+    return 'ingreso no valido'
+
+
 #region CRUD functions
 def crear_producto(codigo): #Create
     if codigo in productos:
@@ -132,64 +150,121 @@ def pedir_porcentaje(mensaje):
                 print('Debe ingresar un número entero\n')
 #endregion
 
-def validar_ingreso(usuario, contraseña):
-    cuentas = [{
-        'usuario': 'user1',
-        'contraseña': 'password1',
-        'permiso': 'administrar'
-    }, {
-        'usuario': 'user2',
-        'contraseña': 'password2',
-        'permiso': 'facturar'
-    }]
-    for cuenta in cuentas:
-        if cuenta['usuario'] == usuario and cuenta['contraseña'] == contraseña:
-            return cuenta['permiso']
-    return 'ingreso no valido'
 
 def menu_admin(opcion_ingresada):
-    if opcion_ingresada == '1':
+    if opcion_ingresada == '1': #Opción de creación de producto
         codigo = input('Ingrese el código del producto a crear: ')
         crear_producto(codigo)
 
-    elif opcion_ingresada == '2':
+    elif opcion_ingresada == '2': #Opción de modificación de productos
+        imprimir_todo(productos)
         codigo = input('Ingrese el código del producto a modificar: ')
         imprimir_producto(codigo)
         modificar_producto(codigo)
         
-    elif opcion_ingresada == '3':
+    elif opcion_ingresada == '3': #Opción de eliminación de productos
+        imprimir_todo(productos)
         codigo = input('Ingrese el código del producto a eliminar: ')
-    
-    elif opcion_ingresada == '4':
-        return 'salir'
+
+    else: 
+        print('Opcion invalida\n Intentalo de nuevo\n')
+
+
+def menu_factura(opcion_ingresada):
+    if opcion_ingresada == '1': #Opción para listar productos
+        imprimir_todo(productos)
+
+    elif opcion_ingresada == '2': #Opción de consulta de productos
+        codigo = input('Ingrese el código del producto que desea consultar: ')
+        imprimir_producto(codigo)
+        
+    elif opcion_ingresada == '3': #Opción para emitir factura
+        menu_emision_factura()
+
     else:
         print('Opcion invalida\n Intentalo de nuevo\n')
 
-def menu_factura(opcion_ingresada):
-    if opcion_ingresada == '1':
-        consultar_producto
-    elif opcion_ingresada == '2':
-        pass
 
-def emitir_factura(lista_productos):
-    pass
+def anniadir_cliente():
+    ingreso_consola = '2'
+    while ingreso_consola == '2':
+        nombre = input('Ingrese el nombre del usuario\n')
+        cedula = input('Ingrese la cédula del usuario\n')
+
+        print('Usuario: ', nombre, 'con cédula', cedula)
+
+        ingreso_consola = input('''¿La información del cliente es correcta?
+        [1] - Sí
+        [2] - No\n''')
+    return nombre, cedula
+
+
+def listar_productos():
+    lista_productos = []
+    ingreso_consola = '1'
+    while ingreso_consola == '1':
+        ingreso_consola = input('''¿Desea añadir un nuevo producto? 
+        [1] - Sí
+        [2] - No\n''')
+        if ingreso_consola == '1':
+            codigo = input('Ingrese el código del producto\n')
+        elif ingreso_consola == '2':
+            break
+        try:
+            cantidad = int(input('¿Cantidad de este producto'))
+            for i in range(cantidad):
+                lista_productos.append(productos[codigo])
+        except KeyError:
+            print('El producto no existe')
+    return lista_productos
+
+
+def menu_emision_factura():
+    opcion_accion = '0'
+    usuario = '---'
+    cedula = '---'
+
+    lista_productos_factura = list()
+    while opcion_accion != '5':
+        opcion_accion = input('''Se esta generando una nueva factura
+        [1] - Registrar productos
+        [2] - Previsualizar productos
+        [3] - Ingresar Usuario
+        [4] - Emitir facturar
+        [5] - Cancelar y salir\n''')
+
+        if opcion_accion == '1':
+            if lista_productos_factura == []:
+                lista_productos = listar_productos()
+            else:
+                lista_productos.append(listar_productos())
+
+        elif opcion_accion == '2':
+            imprimir_todo(lista_productos_factura)
+
+        elif opcion_accion == '3':
+            usuario, cedula = anniadir_cliente()
+
+        else:
+            print('No ha ingresado una accion válida')
+
+
 
 if __name__ == "__main__":
     productos = cargar_datos()
-    opcion_menu = 'no assigned'
 
     opcion_menu = 'login'
     while opcion_menu != 'exit':
         
         if opcion_menu == 'login':
-            usuario = input("\nPuede ingresar 'salir' para terminar la sesión\n\nIngrese el nombre de usuario\n")
+            usuario = input("\nPuede ingresar 'salir' para terminar la sesión\n\nIngrese el nombre de usuario: ")
             if usuario == 'salir':
                 break
             contraseña = getpass()
             opcion_menu = validar_ingreso(usuario, contraseña)
 
         elif opcion_menu == 'administrar':
-            opcion = input('''Usted ha ingresado como administrador
+            opcion = input('''Usted ha ingresado con permisos de administración
             [1] - Crear producto
             [2] - Modificar producto
             [3] - Eliminar producto
@@ -200,11 +275,19 @@ if __name__ == "__main__":
                 opcion_menu = 'exit'
 
         elif opcion_menu == 'facturar':
-            pass
+            opcion = input('''Usted ha ingresado con permisos de facturación
+            [1] - Listar productos
+            [2] - Consultar producto por código
+            [3] - Nueva factura
+            [4] - Salir\n''')
+            if opcion != '4':
+                menu_factura(opcion)
+            else:
+                opcion_menu = 'exit'
         
         elif opcion_menu == 'ingreso no valido':
             print('Usuario y/o contraseña incorrectos')
-            opcion_menu = 'menu'
+            opcion_menu = 'login'
 
 
     guardar_datos(productos)
