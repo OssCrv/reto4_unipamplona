@@ -122,6 +122,56 @@ def imprimir_producto(codigo):
     print('{:^10} {:^30} {:^10} {:^5}'.format('Código', 'Descrición', 'Precio', 'IVA'))
     print('{:^10} {:^30} {:^10} {:^5}%'.format(codigo, descripcion, precio, iva))
     
+
+def imprimir_factura(lista_productos, usuario):
+    subtotal = 0
+    iva_19 = 0
+    iva_10 = 0
+    valor_total = 0
+    raya = '---------------------------------------------------------------------------------------'
+    if lista_productos == []:
+        print('\nUsted no ha ingresado productos a la lista\n')
+    else:
+        print('\n\n'+raya)
+        print('|{:<10}|{:<47}|{:<15}|{:<10}|'.format('Cliente', usuario[0], 'No Factura', '001'))
+        print(raya)
+        print('|{:<10}|{:<25}|{:<10}|{:<5}|{:<15}|{:<15}|'.format('Código', 'Descripción', 'Cantidad', 'IVA', 'Valor unitario', 'Valor total'))
+        print('|{:<10}|{:<25}|{:<10}|{:<5}|{:<15}|{:<15}|'.format('', '', '', '(%)', '(pesos)', '(pesos)'))
+        print(raya)
+        for producto in lista_productos:
+            codigo = producto[0]
+            descripcion = producto[1]
+            precio = producto[2]
+            iva_porc = int(100*float(producto[3]))
+            cantidad = producto[4]
+            print('|{:<10}|{:<25}|{:<10}|{:<5}|{:<15}|{:<15}|'.format(codigo, descripcion, cantidad, iva_porc, precio, precio*cantidad))
+            
+            iva = producto[3]
+            subtotal += precio_sin_iva(precio, iva)*cantidad
+            if iva == 0.19:
+                iva_19 += calculo_iva(precio, iva)*cantidad
+            elif iva == 0.10:
+                iva_10 += calculo_iva(precio, iva)*cantidad
+            valor_total += precio*cantidad
+        print(raya)
+        print('|{:53}|{:<15}|{:<15}|'.format('','SUBTOTAL', round(subtotal)))
+        print('|{:53}|{:<15}|{:<15}|'.format('','IVA 9%', round(iva_19)))
+        print('|{:53}|{:<15}|{:<15}|'.format('','IVA 10%', round(iva_10)))
+        print('|{:53}|{:<15}|{:<15}|'.format('','TOTAL', round(valor_total)))
+        print(raya+'\n\n')
+#endregion
+
+#region calculosIVA
+def precio_sin_iva(precio, IVA):
+    base = precio/(1+IVA)
+    return base
+
+def valor_iva(base, IVA):
+    valor_iva = base*IVA
+    return valor_iva
+
+def calculo_iva(precio, IVA):
+    return valor_iva(precio_sin_iva(precio, IVA), IVA)
 #endregion
 
 
@@ -188,66 +238,77 @@ def menu_factura(opcion_ingresada):
 def anniadir_cliente():
     ingreso_consola = '2'
     while ingreso_consola == '2':
+        usuario = list()
         nombre = input('Ingrese el nombre del usuario\n')
         cedula = input('Ingrese la cédula del usuario\n')
+        usuario.append(nombre)
+        usuario.append(cedula)
 
         print('Usuario: ', nombre, 'con cédula', cedula)
+        print(usuario)
 
         ingreso_consola = input('''¿La información del cliente es correcta?
         [1] - Sí
         [2] - No\n''')
-    return nombre, cedula
+    return usuario
 
 
 def listar_productos():
-    lista_productos = []
+    imprimir_todo(productos)
+    lista_productos = list()
     ingreso_consola = '1'
-    while ingreso_consola == '1':
+    while ingreso_consola != '2':
+        if ingreso_consola == '1':
+            codigo = input('Ingrese el código del producto: ')
+            try:
+                lista_transitoria = [codigo,productos[codigo][0],productos[codigo][1],productos[codigo][2]]
+                cantidad = int(input('Ingrese la cantidad de productos: '))
+                lista_transitoria.append(cantidad)
+                lista_productos.append(lista_transitoria)
+            except KeyError:
+                print('El producto no existe\n')
+
+        else:
+            print('Opción no válida\n')
+
         ingreso_consola = input('''¿Desea añadir un nuevo producto? 
         [1] - Sí
         [2] - No\n''')
-        if ingreso_consola == '1':
-            codigo = input('Ingrese el código del producto\n')
-        elif ingreso_consola == '2':
-            break
-        try:
-            cantidad = int(input('¿Cantidad de este producto'))
-            for i in range(cantidad):
-                lista_productos.append(productos[codigo])
-        except KeyError:
-            print('El producto no existe')
+
+            
     return lista_productos
 
 
 def menu_emision_factura():
-    opcion_accion = '0'
-    usuario = '---'
-    cedula = '---'
+    opcion_accion = '1'
+    usuario = ['---', '---']
 
     lista_productos_factura = list()
     while opcion_accion != '5':
+
+        if opcion_accion == '1': #Opción de registro de productos
+            lista_transitoria = listar_productos()
+            for producto in lista_transitoria:
+                lista_productos_factura.append(producto)
+
+        elif opcion_accion == '2': #Opción para previsualizar la factura
+            imprimir_factura(lista_productos_factura, usuario)
+
+        elif opcion_accion == '3': #Opción para añadir el cliente a la factura
+            usuario= anniadir_cliente()
+
+        elif opcion_accion == '4':#Opción para emitir factura
+            pass
+
+        else:
+            print('No ha ingresado una accion válida')
+
         opcion_accion = input('''Se esta generando una nueva factura
         [1] - Registrar productos
         [2] - Previsualizar productos
         [3] - Ingresar Usuario
         [4] - Emitir facturar
         [5] - Cancelar y salir\n''')
-
-        if opcion_accion == '1':
-            if lista_productos_factura == []:
-                lista_productos = listar_productos()
-            else:
-                lista_productos.append(listar_productos())
-
-        elif opcion_accion == '2':
-            imprimir_todo(lista_productos_factura)
-
-        elif opcion_accion == '3':
-            usuario, cedula = anniadir_cliente()
-
-        else:
-            print('No ha ingresado una accion válida')
-
 
 
 if __name__ == "__main__":
@@ -289,8 +350,4 @@ if __name__ == "__main__":
             print('Usuario y/o contraseña incorrectos')
             opcion_menu = 'login'
 
-
     guardar_datos(productos)
-
-
-
